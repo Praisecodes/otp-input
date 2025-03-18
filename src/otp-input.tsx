@@ -46,19 +46,14 @@ const OtpInput = ({ length, value, onChange, inputStyles, containerStyle }: Prop
   }
 
   useEffect(() => {
-    setValues([]);
-    Array.from({ length }).forEach((_) => {
-      setValues(prev => ([...prev, ""]))
-    })
+    const emptyValues = Array.from({ length }, () => "");
+    setValues(emptyValues);
   }, [length]);
 
   useEffect(() => {
-    let vals = [...values];
-    Array.from({ length }).forEach((_, index) => {
-      vals[index] = value[index];
-    });
-    setValues(vals);
-  }, [value]);
+    const updatedValues = Array.from({ length }, (_, index) => value[index]);
+    setValues(updatedValues);
+  }, [value, length]);
 
   return (
     <View style={containerStyle || styles.inputContainer}>
