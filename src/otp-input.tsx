@@ -47,6 +47,7 @@ const OtpInput = ({ length, value, onChange, inputStyles, containerStyle }: Prop
 
   useEffect(() => {
     const emptyValues = Array.from({ length }, () => "");
+    Array.from({ length }, (_, index) => inputRefs.current[index] = null);
     setValues(emptyValues);
   }, [length]);
 
