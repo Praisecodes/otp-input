@@ -8,7 +8,7 @@ import {
   TextStyle,
   ViewStyle
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 interface Props {
   length: number;
@@ -20,13 +20,19 @@ interface Props {
 
 const OtpInput = ({ length, value, onChange, inputStyles, containerStyle }: Props) => {
   const inputRefs = useRef<(TextInput | null)[]>([]);
-  const [values, setValues] = useState<string[]>([]);
+  const [values, setValues] = useState<string[]>(Array.from({ length }, (_, index) => value[index]));
 
   const handleTextChange = async (text: string, index: number) => {
-    const existingValues = [...values];
-    existingValues[index] = text;
+    let existingValues = [...values];
+    if (text.length > 1) {
+      existingValues = [...text].slice(0, length + 1);
+      inputRefs.current[length - 1]?.focus();
+    } else {
+      existingValues[index] = text;
+    }
     setValues(existingValues);
     onChange(existingValues.join(""));
+
   }
 
   const handleKeyPressed = async (e: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
@@ -45,17 +51,6 @@ const OtpInput = ({ length, value, onChange, inputStyles, containerStyle }: Prop
     }
   }
 
-  useEffect(() => {
-    const emptyValues = Array.from({ length }, () => "");
-    Array.from({ length }, (_, index) => inputRefs.current[index] = null);
-    setValues(emptyValues);
-  }, [length]);
-
-  useEffect(() => {
-    const updatedValues = Array.from({ length }, (_, index) => value[index]);
-    setValues(updatedValues);
-  }, [value, length]);
-
   return (
     <View style={containerStyle || styles.inputContainer}>
       {Array.from({ length }).map((_, index) => (
@@ -63,8 +58,8 @@ const OtpInput = ({ length, value, onChange, inputStyles, containerStyle }: Prop
           key={index}
           ref={el => { inputRefs.current[index] = el }}
           style={[inputStyles || styles.input]}
+          maxLength={(index === length - 1) ? 1 : undefined}
           keyboardType="number-pad"
-          maxLength={1}
           onChangeText={(e) => handleTextChange(e, index)}
           onKeyPress={(e) => handleKeyPressed(e, index)}
           value={values[index]}

@@ -1,5 +1,4 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useState } from 'react';
 import OtpInput from '@praisecodes/otp-input';
 
@@ -10,7 +9,7 @@ export default function App() {
     <View style={styles.container}>
       <OtpInput
         length={5}
-        onChange={(val) => { setValue(val) }}
+        onChange={(val) => { setValue(val); console.log(val) }}
         value={value}
       />
     </View>
