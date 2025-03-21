@@ -89,7 +89,7 @@ const OtpInput = ({
           key={index}
           ref={el => { inputRefs.current[index] = el }}
           style={textInputStyles(index)}
-          maxLength={(index === length - 1) ? 1 : undefined}
+          maxLength={values[index] ? 1 : undefined}
           onFocus={(e) => onFocus(e, index)}
           keyboardType="number-pad"
           onChangeText={handleTextChange}
