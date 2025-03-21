@@ -9,8 +9,16 @@ export default function App() {
     <View style={styles.container}>
       <OtpInput
         length={5}
-        onChange={(val) => { setValue(val); console.log(val) }}
+        onChange={(val) => { setValue(val); console.log([...val]) }}
         value={value}
+        inputStyle={{
+          textAlign: "center",
+          borderBottomWidth: 2,
+          borderWidth: 0,
+          borderRadius: 0
+        }}
+        placeholder='0'
+        tintColor='#00f'
       />
     </View>
   );

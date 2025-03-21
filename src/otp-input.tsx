@@ -6,7 +6,8 @@ import {
   StyleSheet,
   StyleProp,
   TextStyle,
-  ViewStyle
+  ViewStyle,
+  TextInputFocusEventData
 } from 'react-native';
 import React, { useRef, useState } from 'react';
 
@@ -14,41 +15,71 @@ interface Props {
   length: number;
   value: string;
   onChange: (e: string) => void;
-  inputStyles?: StyleProp<TextStyle>;
+  inputStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
+  placeholder?: string;
+  placeholderTextColor?: string;
+  tintColor?: string;
+  autoFocus?: boolean;
 }
 
-const OtpInput = ({ length, value, onChange, inputStyles, containerStyle }: Props) => {
+const OtpInput = ({
+  length,
+  value,
+  onChange,
+  inputStyle,
+  containerStyle,
+  placeholder,
+  placeholderTextColor,
+  tintColor,
+}: Props) => {
   const inputRefs = useRef<(TextInput | null)[]>([]);
-  const [values, setValues] = useState<string[]>(Array.from({ length }, (_, index) => value[index]));
+  const [values, setValues] = useState<string>(value.slice(0, length));
 
-  const handleTextChange = async (text: string, index: number) => {
-    let existingValues = [...values];
+  const handleTextChange = async (text: string) => {
+    let existingValue = values;
+
     if (text.length > 1) {
-      existingValues = [...text].slice(0, length + 1);
-      inputRefs.current[length - 1]?.focus();
-    } else {
-      existingValues[index] = text;
-    }
-    setValues(existingValues);
-    onChange(existingValues.join(""));
+      const currentLength = existingValue.length;
+      const valuesToAdd = text.slice(0, length - currentLength);
+      existingValue += valuesToAdd;
 
+      const index: number = existingValue.length === length ? length - 1 : existingValue.length;
+      inputRefs.current[index]?.focus();
+    } else {
+      existingValue += text;
+    }
+
+    setValues(existingValue)
+    onChange(existingValue);
   }
 
   const handleKeyPressed = async (e: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
     if (e.nativeEvent.key === "Backspace") {
       const vals = [...values];
       vals[index] = "";
-      setValues(vals);
+      setValues(vals.join(""));
 
-      if (index > 0) {
-        inputRefs.current[index - 1]?.focus();
-      }
+      if (index > 0) inputRefs.current[index - 1]?.focus();
     } else {
-      if (index <= length) {
-        inputRefs.current[index + 1]?.focus();
-      }
+      if (index <= length) inputRefs.current[index + 1]?.focus();
     }
+  }
+
+  const textInputStyles = (index: number) => {
+    return ([
+      {
+        ...styles.input,
+        borderColor: (inputRefs.current[index]?.isFocused()
+          ? tintColor ?? "#00ff00"
+          : StyleSheet.flatten(inputStyle)?.borderColor ?? "#000"),
+      },
+      inputStyle
+    ])
+  }
+
+  const onFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>, index: number) => {
+    inputRefs.current[index]?.focus();
   }
 
   return (
@@ -57,12 +88,15 @@ const OtpInput = ({ length, value, onChange, inputStyles, containerStyle }: Prop
         <TextInput
           key={index}
           ref={el => { inputRefs.current[index] = el }}
-          style={[inputStyles || styles.input]}
+          style={textInputStyles(index)}
           maxLength={(index === length - 1) ? 1 : undefined}
+          onFocus={(e) => onFocus(e, index)}
           keyboardType="number-pad"
-          onChangeText={(e) => handleTextChange(e, index)}
+          onChangeText={handleTextChange}
           onKeyPress={(e) => handleKeyPressed(e, index)}
           value={values[index]}
+          placeholder={placeholder}
+          placeholderTextColor={placeholderTextColor}
         />
       ))}
     </View>
